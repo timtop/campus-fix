@@ -1,76 +1,75 @@
 # CampusFix
 
-University maintenance and service request management for MIT 8333, 2026/2027. Built using Nuxt 4, Vue 3, TypeScript, Tailwind, Nitro, Prisma and SQLite. SQLite is the assessment's permitted relational database alternative to PostgreSQL.
+MIT 8333 university maintenance system. Nuxt 4, Vue, TypeScript and Tailwind run on Cloudflare Workers; Cloudflare D1 stores relational data. The Prisma schema documents the model and generated the initial SQL migration. The runtime uses parameterized D1 SQL and atomic batches rather than Prisma Client transactions.
 
-## Run locally
+## Local setup
 
-Use Node 22.22 or newer compatible Node 22 LTS and pnpm 10.11.0. From this folder:
+Use Node 22.22+ (Node 22) and pnpm 10.11.0. From CampusFix:
 
 ```sh
 pnpm install --frozen-lockfile
-cp .env.example .env
-pnpm db:deploy
-DEMO_PASSWORD=CampusFix-Demo-2026 pnpm db:seed
-pnpm dev
+pnpm setup:local
+DEMO_PASSWORD=CampusFix-Demo-2026 pnpm seed:local
+pnpm build
+pnpm preview --port 8787
 ```
 
-Open http://127.0.0.1:3000. The `.env.example` database URL is relative to `prisma/schema.prisma`; the file is `prisma/campusfix.db`. Prisma CLI and Nuxt dev load `.env`. For the production server, explicitly export DATABASE_URL (use an absolute `file:` path) because Node does not automatically load this file.
+Open http://localhost:8787. Local D1 data lives under `.wrangler/state/v3/d1/`. It is separate from your remote D1 database and the old `prisma/campusfix.db` file. `pnpm dev` is also available with Nitro's Cloudflare binding emulation; the production-runtime checks use `pnpm build` then `pnpm preview`.
 
-Demo emails: `student@campusfix.demo`, `staff@campusfix.demo`, `officer@campusfix.demo`, `admin@campusfix.demo`. The command above sets their password to `CampusFix-Demo-2026`. These are deliberately public local demo credentials, not hosting credentials. Existing seeded users are preserved on reseeding. Use a new database to create users with a different demo password.
+Demo emails: student@campusfix.demo, staff@campusfix.demo, officer@campusfix.demo, admin@campusfix.demo. The seed command above sets their password to `CampusFix-Demo-2026`. These are public assessment accounts. Reseeding does not overwrite an existing user's password or role. For public hosting, choose a password you control when seeding and keep it private; never store it in the repository. Existing deployed credentials are in the separate private handoff file. PASSWORD_PEPPER is required for new password hashes; keep its value consistent with the Worker secret. The local copy is in gitignored .dev.vars. Changing the pepper invalidates existing hashes, so do not rotate it without a planned password reset.
 
-## Implemented behavior
+## Cloudflare deployment
 
-Students and staff register, submit requests with photo evidence, search and track their own requests, edit open requests, and confirm deletion of open requests. Officers see assigned requests and record progress/completion notes. Administrators assign/reassign officers, cancel requests, manage user roles and active status, manage categories, inspect audit records and export CSV reports.
+The supplied `wrangler.jsonc` binds `DB` to the database ID supplied for this project. The database name is configured as campusfix-db; confirm it matches your Cloudflare account. Nitro generates the Worker entry point and asset configuration during the build.
 
-Nine advanced feature categories are represented: sessions, backend role authorization, image evidence, in-app notifications, search/filter/pagination, audit trail, OpenAPI documentation, CSV export, and automatic status refresh. Refresh uses 15-second polling, not a WebSocket or instantaneous push channel. The first eight meet the assessment's optional-feature wording; polling is an additional convenience.
+```sh
+pnpm exec wrangler login
+pnpm exec wrangler d1 info DB
+pnpm db:remote
+# Set PASSWORD_PEPPER as a Worker secret using wrangler secret put PASSWORD_PEPPER.
+# Supply the same PASSWORD_PEPPER and your DEMO_PASSWORD in the shell environment, then:
+pnpm seed:remote
+pnpm deploy
+```
 
-The API owns authorization. UI visibility never grants access. Passwords use bcrypt (cost 12). Random session tokens are hashed in the database and sent in HttpOnly, SameSite=Lax cookies, expiring after eight hours. Production HTTPS enables Secure cookies. Writes reject foreign Origin headers. Login and registration share a per-IP attempt limit. Public registration allows only student/staff roles. Disabling an account denies existing sessions on the next request. Status changes use an atomic transaction and a conditional status check. Audit records are retained when requests are deleted.
+`db:remote` and `seed:remote` change the selected remote database. Initial setup is intended for a new CampusFix database. Inspect an existing database before applying migrations. Never upload the local .db file as a static website asset. No Docker or persistent local filesystem is needed on Cloudflare.
 
-## Verify
+After deployment, verify `/api/health`, log in as each role, submit and assign a request, complete it, inspect notifications/timeline and export a report. Re-deploy and confirm records persist. Record the actual public URL and verification results in report section 10. Login cookies become Secure automatically on HTTPS. Cloudflare OAuth credentials are managed by Wrangler outside the project and excluded from submission artifacts.
 
-Use a disposable demo database; integration tests write and delete sample records.
+## Verification
+
+Start the built Worker on port 8787, then:
 
 ```sh
 pnpm typecheck
 pnpm test
-pnpm build
 pnpm exec playwright install chromium
-# In one terminal, from CampusFix, export an absolute database path:
-export DATABASE_URL="file:$PWD/prisma/campusfix.db"
-NODE_ENV=production HOST=127.0.0.1 pnpm start
-# In another terminal:
-pnpm test:e2e
+BASE_URL=http://127.0.0.1:8787 pnpm test:e2e
 ```
 
-`BASE_URL` changes the integration test target. `DEMO_PASSWORD` changes the test login password. Browser screenshots are saved in `docs/screenshots/`; machine-readable results are in `docs/test-results.json`. See `docs/verification.md` for observed results and limitations.
+Tests write demonstration records, so use the local test database rather than a live production database. The suite covers request CRUD, ownership/roles, assignment/progress, notifications, category/user administration, registration/logout, image evidence, reports/CSV, mobile layout, concurrent progress updates and rollback on invalid foreign keys. Screenshots and results are written under docs/.
 
-## Deployment
+## Security and consistency
 
-The application needs a Node server and persistent database storage. A static website host cannot run its APIs. Dockerfile, Compose and Render Blueprint are included. Hosting has not been provisioned and there is no claimed public deployment URL.
+Passwords use Web Crypto PBKDF2-SHA-256 with 100,000 iterations plus an HMAC-SHA-256 password pepper stored separately as a Worker secret and independent random salts. Random session tokens are stored as SHA-256 digests, sent only in HttpOnly, SameSite=Lax cookies, and expire after eight hours. The API checks the current role, active flag and request access on every protected operation. Foreign Origin headers are rejected for writes.
 
-Local container option: `docker compose up --build`. This uses an HTTP-only localhost port and sets `COOKIE_SECURE=false`. In another terminal run `docker compose exec -e DEMO_PASSWORD=CampusFix-Demo-2026 campusfix pnpm db:seed`. The named volume retains the database.
+D1 batches are atomic. Status and assignment writes use optimistic checks against the previous state/version; follow-up logs, notifications and audits depend on the operation's unique log record. Concurrent duplicate status changes produce one success and one conflict. The backend uses bound SQL parameters rather than interpolating user values into queries.
 
-For Render: push this folder to your own repository, create a Blueprint from `render.yaml`, and approve the paid instance and disk in your hosting account. The Docker startup applies migrations and starts the server. In the host shell run `DEMO_PASSWORD='a password you choose' pnpm db:seed`. Keep `COOKIE_SECURE=true`, use the HTTPS URL, verify `/api/health`, log in as each role, create/assign/complete a request, then restart and confirm data persists. Record the URL and verification evidence in report section 10. No credentials should be committed.
+Eight listed advanced features: sessions, role authorization, image evidence, in-app notifications, search/filter/pagination, audit trail, OpenAPI documentation and CSV export. Status lists also refresh every 15 seconds; this is polling, not server push.
 
-For another host mount persistent storage at `/data`, set `DATABASE_URL=file:/data/campusfix.db`, expose port 3000 behind HTTPS and set `COOKIE_SECURE=true`. Run a single instance for SQLite. Back up the database using SQLite backup tooling or a consistent volume snapshot. PostgreSQL scale-out requires changing the Prisma provider, generating a PostgreSQL migration and testing against that database; it is not claimed as verified here.
+## Limits
 
-## Structure and documentation
+Evidence uploads are PNG/JPEG/WebP data URLs limited to about 1 MB to keep records within D1 row-size limits. Larger or production-scale media should use private R2 storage. Input is bounded and MIME/data URL shape is validated; content inspection and quotas remain future work. The attempt limiter is per Worker isolate and is not a global abuse defense. Password recovery, verified university membership, formal load testing and institutional identity integration are not implemented.
 
-- `app.vue`, `components/`, `assets/css/`: frontend.
-- `server/api/[...path].ts`: REST routes and validation.
-- `server/utils/`: database, authentication and workflow policy.
-- `prisma/`: relational schema, initial migration and idempotent seed.
-- `tests/`: component, policy, API and browser tests.
-- `docs/api.md`, `public/openapi.json`: API guide and importable OpenAPI definition.
-- `docs/report.md`: the assessment's 12-section technical report.
-- `docs/architecture.md`: architecture and relationship diagrams.
+## Files
 
-## Practical limits
+- `server/api/[...path].ts`: HTTP routes and D1 SQL.
+- `server/utils/`: D1 access, sessions, password hashing and policies.
+- `d1/migrations/`: active D1 SQL migrations.
+- `prisma/schema.prisma`: model and historical SQL-generation source.
+- `scripts/seed-d1.ts`: idempotent D1 demo seed, local or remote.
+- `wrangler.jsonc`, `nuxt.config.ts`: Cloudflare configuration.
+- `docs/api.md`, `public/openapi.json`: API contracts.
+- `docs/report.md`, `docs/evidence/`, `docs/screenshots/`: assessment report and observed evidence.
 
-Photo evidence is stored as a bounded data URL in the database and returned only through authorized request reads. This is suitable for a small assessment demo; production should use private object storage, content inspection and quotas. The request body limit checks Content-Length; a reverse proxy must enforce a hard streaming body limit too. The login limiter is process-local and does not coordinate multiple instances. There is no password recovery/email verification flow. Public staff registration is allowed by the demo policy; a university deployment should verify staff membership. Completion timestamps are inferred from the last request update. Notifications are in-app only. The application is tested for its documented workflow, not certified for institutional production use.
-
-## References
-
-Nuxt Node deployment: https://nuxt.com/docs/3.x/getting-started/deployment
-Prisma SQLite connector: https://www.prisma.io/docs/orm/v6/overview/databases/sqlite
-Assessment source: CA - MIT 8333 - Advanced Web Application Development (Virtual lab).pdf, MIVA Open University, pages 1-3.
+The earlier Node/SQLite implementation's local .db files are historical and are not used by this Worker. The source archive excludes environment files, databases, .wrangler state, dependencies and generated builds.

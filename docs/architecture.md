@@ -1,13 +1,13 @@
 # Architecture
 
-CampusFix uses one Nuxt application. Vue renders forms and role-specific views. Nitro exposes REST endpoints. Prisma maps data to a SQLite file. A browser cookie identifies a server-side session. Requests are authorized using the database user's current role and active flag on every API call.
+CampusFix uses one Nuxt application. Vue renders forms and role-specific views. Nitro exposes REST endpoints. Bound SQL statements access Cloudflare D1. The Prisma schema remains the relational model and SQL migration source. A browser cookie identifies a server-side session. Requests are authorized using the database user's current role and active flag on every API call.
 
 ```mermaid
 flowchart LR
  Browser[Vue browser interface] -->|JSON + session cookie| Nitro[Nuxt Nitro API]
  Nitro --> Policy[Validation and role / ownership rules]
- Policy --> Prisma[Prisma Client]
- Prisma --> SQLite[(Persistent SQLite database)]
+ Policy --> Prisma[Parameterized D1 SQL]
+ Prisma --> SQLite[(Cloudflare D1)]
 ```
 
 ```mermaid

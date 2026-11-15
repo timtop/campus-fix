@@ -11,7 +11,7 @@ GET `/auth/me`: current public user. POST `/auth/logout`: revoke current session
 ## Requests
 
 GET `/requests?search=&status=&categoryId=&page=1`: scoped list `{items,total,page,pages}`, six per page. Administrator sees all, officer sees assigned, student/staff sees owned.
-POST `/requests`: student/staff only. Body `{title,description,location,categoryId,priority,image?}`. Title 5-160, description 15-3000, location 3-200 characters; priority LOW/NORMAL/HIGH. Optional image: PNG/JPEG/WebP base64 data URL, max approximately 2 MB. Returns created request.
+POST `/requests`: student/staff only. Body `{title,description,location,categoryId,priority,image?}`. Title 5-160, description 15-3000, location 3-200 characters; priority LOW/NORMAL/HIGH. Optional image: PNG/JPEG/WebP base64 data URL, max approximately 1 MB. Returns created request.
 GET `/requests/{id}`: authorized request with category, public owner, assignment/officer and status logs/actors.
 PATCH `/requests/{id}`: owner, OPEN only. Same required fields as creation except image cannot be changed.
 DELETE `/requests/{id}`: owner when OPEN, or administrator. Deletes request and dependent logs/assignment, keeps audit record.

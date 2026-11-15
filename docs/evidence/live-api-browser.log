@@ -1,0 +1,15 @@
+
+Running 8 tests using 1 worker
+
+(node:20766) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/campusfix.spec.ts:9:1 › API rejects anonymous access and cross-origin writes (659ms)
+  ✓  2 tests/e2e/campusfix.spec.ts:13:1 › API enforces roles, ownership, workflow, CRUD and notifications (5.5s)
+  ✓  3 tests/e2e/campusfix.spec.ts:43:1 › API registration cannot self-grant administrator and logout revokes session (669ms)
+  ✓  4 tests/e2e/campusfix.spec.ts:47:1 › student frontend submits an image request, edits it and deletes it (5.2s)
+  ✓  5 tests/e2e/campusfix.spec.ts:63:1 › admin frontend reports, categories, user access and screenshots (4.6s)
+  ✓  6 tests/e2e/campusfix.spec.ts:71:1 › officer and student interfaces render on desktop and mobile (3.7s)
+  ✓  7 tests/e2e/campusfix.spec.ts:79:1 › API filters and pagination preserve ownership, category CRUD and inactive sessions (2.3s)
+  ✓  8 tests/e2e/campusfix.spec.ts:92:1 › concurrent officer updates create one progress log and failed creation rolls back (2.9s)
+
+  8 passed (26.4s)

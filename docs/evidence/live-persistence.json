@@ -1,0 +1,9 @@
+{
+  "url": "https://campusfix.campusfix.workers.dev",
+  "healthStatus": 200,
+  "loginAfterRedeploy": 200,
+  "secureHttpOnlyCookie": true,
+  "persistedRequests": 8,
+  "recordsUnchangedAcrossRedeploy": true,
+  "requestSnapshotSha256": "029c4a183665dbc2411be735730aca63e780c9f712b0405fbde09a8fc3cef51a"
+}

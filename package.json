@@ -5,23 +5,26 @@
   "scripts": {
     "dev": "nuxt dev --host 127.0.0.1",
     "build": "nuxt build",
-    "start": "node .output/server/index.mjs",
-    "postinstall": "prisma generate && nuxt prepare",
-    "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts",
+    "start": "wrangler dev",
+    "postinstall": "nuxt prepare",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "typecheck": "nuxt typecheck",
-    "db:deploy": "node --env-file-if-exists=.env scripts/init-db.mjs"
+    "preview": "wrangler dev",
+    "deploy": "pnpm build && wrangler deploy",
+    "db:local": "wrangler d1 migrations apply DB --local",
+    "db:remote": "wrangler d1 migrations apply DB --remote",
+    "seed:local": "node --env-file-if-exists=.dev.vars --import tsx scripts/seed-d1.ts --local",
+    "seed:remote": "node --import tsx scripts/seed-d1.ts --remote",
+    "setup:local": "node scripts/create-local-secret.mjs && pnpm db:local"
   },
   "dependencies": {
-    "@prisma/client": "6.8.2",
-    "bcryptjs": "3.0.2",
     "nuxt": "4.6.4",
     "vue": "3.5.45",
     "zod": "4.6.6"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261115.1",
     "@playwright/test": "1.61.1",
     "@types/node": "^22.20.5",
     "@vitejs/plugin-vue": "6.0.11",
@@ -35,7 +38,8 @@
     "typescript": "5.8.3",
     "vite": "^8.3.8",
     "vitest": "5.1.0",
-    "vue-tsc": "2.2.10"
+    "vue-tsc": "2.2.10",
+    "wrangler": "^4.162.0"
   },
   "engines": {
     "node": ">=22.22.0 <23"

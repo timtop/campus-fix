@@ -18,7 +18,7 @@ The scope is campus maintenance coordination. CampusFix does not process payment
 
 Provide an accessible browser interface for submitting and tracking faults. Give every submitted request an identifiable owner and an explicit status. Restrict each maintenance officer to assigned requests. Let administrators assign work, manage access and categorize faults. Preserve progress notes and administrative activity for accountability. Produce repeatable tests and a submission containing actual output screenshots and application source.
 
-Acceptance is demonstrated by a complete workflow: create a request as a student, deny another user's access, assign an officer as an administrator, move the request through IN_PROGRESS to COMPLETED, and verify the student's notification and timeline. The API tests exercise this workflow on the production server.
+Acceptance is demonstrated by a complete workflow: create a request as a student, deny another user's access, assign an officer as an administrator, move the request through IN_PROGRESS to COMPLETED, and verify the student's notification and timeline. The API tests exercise this workflow in the local Workers runtime.
 
 ## 3. Requirement analysis
 
@@ -44,29 +44,29 @@ Vue reactive state holds filters, form input, current user and the active view. 
 
 ## 5. Backend technologies used
 
-Nuxt Nitro supplies a Node.js REST server in the same project. Zod validates submitted fields. Prisma performs database queries. bcryptjs hashes passwords with cost 12. Node's cryptography library generates 32 random bytes for each session token and hashes the token with SHA-256 before storage.
+Nuxt Nitro compiles the REST backend for Cloudflare Workers. Zod validates submitted fields. Parameterized SQL accesses Cloudflare D1 through a DB binding. Web Crypto PBKDF2-SHA-256 hashes passwords with 100,000 iterations, random salts and a separate HMAC-SHA-256 password pepper. Web Crypto generates 32 random bytes for each session token and hashes the token with SHA-256 before storage.
 
 The browser receives an HttpOnly, SameSite=Lax session cookie. Sessions expire after eight hours and logout deletes the server record. Each protected operation reads the user's current active flag and role. Production enables Secure cookies behind HTTPS. Foreign Origin headers are rejected for writes, API responses are not cached, and password hashes are omitted from user responses.
 
 A process-local login/registration limiter allows 20 attempts per IP in 15 minutes. It provides a basic single-instance defense; a shared limiter and verified proxy configuration are needed for multiple servers. Content-Length is checked before API writes, while a production proxy must also impose a streaming request-body limit.
 
-Status changes check the allowed state transition and use a database transaction. A conditional update requires the request to remain in the status originally read, avoiding duplicate progress changes under concurrency. The same transaction writes the timeline entry, notification and audit action. Assignment validates an active OFFICER before recording the assignment and notifying the participants.
+Status changes check the allowed state transition and use an atomic D1 batch. A conditional update requires the request to remain in the status/version originally read. D1 executes the mutation and dependent writes in an atomic batch. A unique operation log gates notifications and audit inserts; concurrency tests verify that competing progress updates produce one successful history entry. Assignment validates an active OFFICER before recording the assignment and notifying the participants.
 
 ## 6. Database used and relationships
 
-SQLite stores relational data in a persistent file accessed through Prisma. The initial SQL migration creates tables, uniqueness rules, foreign keys and the owner/status index. The deployment initializer creates an empty file when needed and applies committed migrations. Seed logic upserts the four roles, six fault categories and four demonstration users, then creates eight example requests only if none exist.
+Cloudflare D1 stores relational SQLite data behind a Worker binding. The Prisma schema documents the relational model and generated the initial migration; Prisma Client is not used at runtime. The initial SQL migration creates tables, uniqueness rules, foreign keys and the owner/status index. Wrangler applies committed D1 SQL migrations separately to local emulation or the remote database. Seed logic upserts the four roles, six fault categories and four demonstration users, then creates eight example requests only if none exist.
 
 Role to User is one-to-many. User to ServiceRequest and Category to ServiceRequest are one-to-many. ServiceRequest to Assignment is one-to-zero-or-one for the current officer; a unique requestId prevents multiple current assignments. User to Assignment is one-to-many. ServiceRequest to StatusLog is one-to-many; each log also references its actor. User to Session and User to Notification are one-to-many.
 
 Deleting a request cascades to its assignment and status logs. Audit records retain independent actor and target identifiers, so a deletion action remains visible. Categories in use cannot be deleted. User management changes role and active status instead of deleting identities that existing history references.
 
-The database is appropriate for one application instance with persistent disk. Horizontal scaling should use a server database such as PostgreSQL and a new provider-specific migration. That configuration has not been tested and is not represented as delivered PostgreSQL deployment.
+Workers use the shared D1 binding rather than writing a local database file. Local D1 state under .wrangler is separate from the remote database. Existing prisma/campusfix.db files belong to the earlier local implementation and are not used by the Worker.
 
 ## 7. API documentation
 
 The base path is /api. Authentication routes register, log in, identify the current user and log out. Request routes list, create, read, update, delete, assign and change progress. Administrative routes manage categories and users, return audit actions and produce reports/CSV. Notifications belong to the current user. A public health route performs a database query.
 
-Creation requires title, description, location, categoryId and priority. Title length is 5-160 characters, description 15-3000 and location 3-200. Priority is LOW, NORMAL or HIGH. Optional evidence is a bounded PNG/JPEG/WebP data URL. Only the owner can edit an OPEN request. The owner can delete an OPEN request; an administrator can delete any request after the UI confirmation.
+Creation requires title, description, location, categoryId and priority. Title length is 5-160 characters, description 15-3000 and location 3-200. Priority is LOW, NORMAL or HIGH. Optional evidence is a bounded PNG/JPEG/WebP data URL of approximately 1 MB or less. Only the owner can edit an OPEN request. The owner can delete an OPEN request; an administrator can delete any request after the UI confirmation.
 
 The workflow is OPEN -> ASSIGNED -> IN_PROGRESS -> COMPLETED. An administrator may cancel a nonterminal request. Terminal requests cannot be reopened or reassigned. Status notes require 5-1000 characters.
 
@@ -74,27 +74,29 @@ Success responses use HTTP 200. Validation uses 400; authentication 401; denied 
 
 ## 8. Screenshots of major interfaces
 
-The screenshots in this submission were captured by Playwright from the running local production build. They are browser renders of CampusFix, not mockups. Each image is captioned in the PDF with its role and purpose. The screenshot directory contains login, administrator dashboard, reports, people management, officer dashboard, student dashboard, submission form, request tracking and mobile output.
+The screenshots in this submission were captured by Playwright from the live HTTPS deployment on Cloudflare Workers. They are browser renders of CampusFix, not mockups. Each image is captioned in the PDF with its role and purpose. The screenshot directory contains login, administrator dashboard, reports, people management, officer dashboard, student dashboard, submission form, request tracking and mobile output.
 
 ## 9. Testing evidence
 
 Verification results and command logs are recorded in docs/verification.md and docs/evidence/. The final test summary accompanies this section in the PDF. Only observed successful commands are described as passing. Initial failures are retained in the report's challenges section as resolved issues rather than presented as final results.
 
-Policy tests check owner/admin access, assigned-officer access, rejection of unrelated users, ordered status transitions and CSV formula escaping. Component tests check readable multiword status text and updates when a status changes. API integration tests check anonymous/cross-origin rejection, restricted roles, private record access, validation, CRUD, assignment, ordered progress, notifications, CSV output, registration privilege escalation and logout revocation.
+Policy tests check owner/admin access, assigned-officer access, rejection of unrelated users, ordered status transitions and CSV formula escaping. Component tests check readable multiword status text and updates when a status changes. Password tests check random salts, correct/wrong passwords and malformed stored hashes. API integration tests check anonymous/cross-origin rejection, restricted roles, private record access, validation, CRUD, assignment, ordered progress, notifications, CSV output, registration privilege escalation and logout revocation.
 
-Browser tests exercise login, image request creation, editing and deletion, administrator reporting/category creation, people management visibility, officer/student dashboards, detail history and a mobile width assertion. They also capture the screenshots. Tests run against an actual production build and SQLite database. The initial migration is separately exercised against an empty database.
+Browser tests exercise login, image request creation, editing and deletion, administrator reporting/category creation, people management visibility, officer/student dashboards, detail history and a mobile width assertion. They also capture the screenshots. The suite passed against the local Worker/D1 emulator and again against the deployed HTTPS application and remote D1 database. The initial migration is separately exercised against an empty database.
 
-These tests verify representative behavior, not every possible path. They do not prove resistance to all attacks, load capacity, email delivery or public hosting. No coverage percentage is claimed. Docker execution and remote database connectivity are not passed checks.
+Additional Cloudflare tests verify concurrent officer updates and atomic rollback of a request with an invalid category. These tests verify representative behavior, not every possible path. They do not prove resistance to all attacks, load capacity, email delivery or public hosting. No coverage percentage is claimed. Remote database connectivity and the documented live workflows passed after authorization; load testing and institutional production readiness are not claimed.
 
 ## 10. Deployment information
 
-The local production target is the compiled Nuxt Node server, started with NODE_ENV=production and an absolute DATABASE_URL. The health route checks database connectivity. Browser/API tests use http://127.0.0.1:3000. This local URL is not an online deployment.
+Live URL: https://campusfix.campusfix.workers.dev
 
-Dockerfile, Compose and a Render Blueprint are supplied. The container installs packages with pnpm, generates Prisma Client, builds Nuxt, applies migrations and starts the server as a non-root user. The database must reside on persistent storage at /data. HTTPS deployment uses COOKIE_SECURE=true. Local Compose binds to loopback and allows an HTTP cookie for demonstration.
+CampusFix is deployed on Cloudflare Workers with the DB binding connected to the user's D1 database. Cloudflare authorization was verified, the empty database inspected, the initial SQL migration applied and four demonstration users seeded with a generated private password. Login details are delivered separately and excluded from the submission and source archive.
 
-No hosting account was provisioned and no public deployment URL or hosting credentials were supplied or invented. The local Docker daemon was unavailable, so the container build/run is not verified. To finish: upload the project to a repository under your account, create a Render Blueprint with persistent disk, approve its hosting cost, seed users in the host shell, check /api/health, run each role's workflow through the HTTPS URL, and restart the service to confirm persistence. Add that actual URL and evidence here before submission.
+The HTTPS health endpoint returns HTTP 200 with status ok. All eight API/browser scenarios pass against the public URL, including request CRUD, backend authorization, officer assignment/completion, notifications, reporting, mobile layout, concurrent updates and rollback. Nine unit/component/password tests also pass. Screenshots in section 8 were captured from the actual deployed application. The same Worker build was redeployed to check D1 persistence; observed results and deployment version are recorded in docs/cloudflare-status.md.
 
-The Render configuration requests a paid instance/disk; no paid resource has been created. The README provides local and host-specific steps, data persistence notes and the exact remaining checks.
+The first public checks encountered TLS handshake failures while the newly registered workers.dev address became available. Once HTTPS responded, live login exposed a platform PBKDF2 limit that the local emulator did not enforce. The production code now uses Cloudflare's supported 100,000 iterations with random salts and a separate HMAC-SHA-256 password pepper. The pepper is stored as a Cloudflare Worker secret; its value and the account password are not present in source or report. The corrected deployment passed the live suite.
+
+Wrangler applies D1 migrations and deploys the cloudflare_module build. D1 data persists separately from Worker versions. No Docker daemon or persistent local server disk is needed. Local .wrangler data remains separate from the remote database. The local .dev.vars copy of the password pepper must be backed up privately; changing the pepper requires a planned password reset. HTTPS sessions use Secure cookies automatically.
 
 ## 11. Challenges encountered and solutions
 
@@ -104,12 +106,12 @@ Package downloads required network-enabled execution. The shell initially select
 
 Type checking exposed deeply recursive inferred types for the catch-all API route and missing Node tool types. The UI now uses an explicit fetch boundary, while TypeScript continues to check application code. A mismatched HTML closing tag was corrected before the build passed. The browser suite exposed an inaccessible password label and a login payload containing an empty registration name; both were fixed and retested.
 
-The Prisma engine initially failed when its SQLite file did not exist. A small deployment initializer creates the file and parent directory before applying committed migrations. The migration was verified on a separate empty file. The matching Playwright browser was missing and was installed before collecting screenshots. The unavailable Docker engine and absent hosting access remain disclosed deployment constraints.
+The Prisma engine initially failed when its SQLite file did not exist. The earlier Node version used a file initializer before migrations; the Cloudflare version uses Wrangler D1 migrations instead. The original SQLite migration was verified on a separate empty file; the Cloudflare conversion also applies the D1 migration to a separate local D1 database. The matching Playwright browser was missing and was installed before collecting screenshots. Cloudflare deployment replaces the earlier Docker/Render configuration. Cloudflare authorization was completed and remote deployment verified.
 
 Evidence images are bounded database data URLs rather than external object-storage files. This avoids public file paths and simplifies the assessment demo, at the cost of larger records and responses. A real university deployment should add private storage, content inspection, user quotas, verified institutional email and a password recovery process. Dialogs contain keyboard focus, close with Escape and return focus to their trigger. A wider assistive-technology review remains future work.
 
 ## 12. Conclusion
 
-CampusFix implements the university maintenance workflow with role-specific interfaces, authenticated REST endpoints, relational persistence, request assignment, progress history and eight listed advanced features. The source, test evidence and actual screenshots accompany this report. Local verification and the remaining deployment work are stated separately. Online deployment remains a required submission step until the application has been published and checked using an authorized hosting account.
+CampusFix implements the university maintenance workflow with role-specific interfaces, authenticated REST endpoints, relational persistence, request assignment, progress history and eight listed advanced features. The source, test evidence and actual screenshots accompany this report. Local checks and live deployment evidence are stated separately. The application has been published and checked using the authorized Cloudflare account. The student must add their real identification before submitting the report.
 
 References: MIVA Open University MIT 8333 assessment, pages 1-3; Nuxt deployment documentation (https://nuxt.com/docs/3.x/getting-started/deployment); Prisma SQLite documentation (https://www.prisma.io/docs/orm/v6/overview/databases/sqlite). Framework links explain the general stack; implementation and test claims are supported by the included source and local evidence.

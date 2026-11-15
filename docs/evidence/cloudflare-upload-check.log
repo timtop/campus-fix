@@ -1,0 +1,15 @@
+
+ ⛅️ wrangler 4.162.0
+────────────────────
+Using redirected Wrangler configuration.
+ - Configuration being used: ".output/server/wrangler.json"
+ - Original user's configuration: "wrangler.jsonc"
+ - Deploy configuration file: ".wrangler/deploy/config.json"
+✨ Read 18 files from the assets directory /Users/tt/Documents/Codex/2026-11-15/referenced-chatgpt-conversation-this-is-an/CampusFix/.output/public
+Total Upload: 661.27 KiB / gzip: 172.85 KiB
+Your Worker has access to the following bindings:
+Binding                        Resource         
+env.DB (campusfix-db)          D1 Database      
+env.ASSETS                     Assets           
+
+--dry-run: exiting now.

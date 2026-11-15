@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "campusfix",
+  "compatibility_date": "2026-11-15",
+  "observability": { "enabled": true },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "campusfix-db",
+    "database_id": "f1fef92f-fe46-46b7-839d-a5cc6963fdc7",
+    "migrations_dir": "d1/migrations"
+  }]
+}

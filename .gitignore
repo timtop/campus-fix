@@ -7,3 +7,7 @@ node_modules
 playwright-report
 test-results
 uploads
+
+.wrangler
+.dev.vars*
+worker-configuration.d.ts

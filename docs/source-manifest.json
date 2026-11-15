@@ -1,38 +1,28 @@
 [
   {
-    "path": ".dockerignore",
-    "bytes": 103,
-    "sha256": "a4d3b4949716433d153ca980dd1001586ccce125caa7db41492775a2ddec2f3e"
-  },
-  {
     "path": ".env.example",
-    "bytes": 181,
-    "sha256": "de48920ccf028278697952175d965b086b46928f9396fe9fe2aadab2e84dd2ca"
+    "bytes": 167,
+    "sha256": "6e8afff424ab24b8fccd4c8b2e114d7baabeb3a74fc57318fc2a214dcce2f8d8"
   },
   {
     "path": ".gitignore",
-    "bytes": 89,
-    "sha256": "12e8c74e2a73831652dca4f67d0b01b5d6740fad7372f72bb106491e0cf22090"
-  },
-  {
-    "path": "Dockerfile",
-    "bytes": 607,
-    "sha256": "733ba6e460d97cad01f666a4fc7d14e26d485e64df9e8cbcb9c1fa033e301df0"
+    "bytes": 137,
+    "sha256": "97cd64e499644e42f330eba9815cac2065b26f60665c3a6f1b6554a23d31dfaf"
   },
   {
     "path": "README.md",
-    "bytes": 6465,
-    "sha256": "444ad66f8e2de851a5644369cc8274e1225227500b3937014e03198eb390e740"
+    "bytes": 5806,
+    "sha256": "d35912a44dd9fd8034d0db22a8fd71c8949c0b038fd62ff68fb3d5d3920b77ea"
   },
   {
     "path": "app.vue",
-    "bytes": 25795,
-    "sha256": "4cc9e273d9f1c2bd436bdd60848fe4239f33012376c7f6d38139d32fe84d5d5d"
+    "bytes": 25108,
+    "sha256": "03963c99de2bae8f80237ebc705e51999a15f8fe57e7bae792d09466552437c4"
   },
   {
     "path": "assets/css/main.css",
-    "bytes": 16077,
-    "sha256": "8216de5fb20dc416c843870b49b02d576153c60e96be343dbf0675bc2bf373a8"
+    "bytes": 26278,
+    "sha256": "380de4c65acfa5c13c5659bd166e05c06267626b8c3183b5d72d4cc52959d727"
   },
   {
     "path": "components/StatusBadge.vue",
@@ -40,19 +30,24 @@
     "sha256": "c7f5d59113712e64ed92438b6f6cac2ba9d48927ac9dc3eed59411dc9809698f"
   },
   {
-    "path": "compose.yaml",
-    "bytes": 264,
-    "sha256": "46f438d5bb04c4cf16fa6793bfce6132c4c7fbd50e2e816d0efbd307e1f33d98"
+    "path": "components/UiIcon.vue",
+    "bytes": 936,
+    "sha256": "30d8d3d87cbb3f39ab112223be2f627405117aa7ad1caa31e59508a83aaeabd5"
+  },
+  {
+    "path": "d1/migrations/0001_initial.sql",
+    "bytes": 3521,
+    "sha256": "7fa35f896daba460446c5a081359461fd096d2114529bb3a0757184ecc8647b6"
   },
   {
     "path": "nuxt.config.ts",
-    "bytes": 407,
-    "sha256": "ae14b14ee33af34740e444ed9fedb85724247c2c579f7ecd16a0f4fb367168e9"
+    "bytes": 503,
+    "sha256": "0f5077ee6d83084ed59630f5533fbdbd6c5bb62c2aedf3a3ddc3f8ed4bc8060e"
   },
   {
     "path": "package.json",
-    "bytes": 1127,
-    "sha256": "0683adbfd5258a527a92bd21fa0d1dc5bd2bfb8d1ad63187dd8043b2a23c7ae0"
+    "bytes": 1411,
+    "sha256": "181dc8937a12f832d526a4a9665910bcf79c6acd894f910dc678335d09249a7b"
   },
   {
     "path": "playwright.config.ts",
@@ -61,8 +56,8 @@
   },
   {
     "path": "pnpm-lock.yaml",
-    "bytes": 256105,
-    "sha256": "3de339244aa3cd1df4990d5be69557af1644c6403a552bdb71f75b426d394732"
+    "bytes": 272361,
+    "sha256": "662bc2cd6fd178cda8c0dbad845a47038a46a2a6bd0d0c78e90b84dea8cc8d81"
   },
   {
     "path": "prisma/migrations/202611150001_initial/migration.sql",
@@ -76,33 +71,33 @@
   },
   {
     "path": "prisma/schema.prisma",
-    "bytes": 2286,
-    "sha256": "a01e8967da91b43087211633842dbab1e97bcb1e20364d704e458f6c634f8a64"
+    "bytes": 2233,
+    "sha256": "b224780acec83105f97c5f97f32611239e03fd38c8d771821ffc02d4f53d7c71"
   },
   {
-    "path": "prisma/seed.ts",
-    "bytes": 2370,
-    "sha256": "69388a5d2ed89e3147e8e906d6eb9d10be07d05ab008204afb20aa9e092053ed"
+    "path": "public/brand-mark.svg",
+    "bytes": 4126,
+    "sha256": "31abd1ef70c0972a44077feee65e0b04f17b9c0eed0c1e3b096a06832dd174ff"
+  },
+  {
+    "path": "public/fonts/inter-LICENSE.txt",
+    "bytes": 4477,
+    "sha256": "3b0a5fca3d17942cde889069889dedbbbd075e9b599968c82a95f4d944e9b345"
   },
   {
     "path": "public/openapi.json",
     "bytes": 34177,
-    "sha256": "90ae71aff800084be92abb3a08b86da569a68c39b4834281fcde4e98260961c7"
-  },
-  {
-    "path": "render.yaml",
-    "bytes": 318,
-    "sha256": "eaee8912350b413acd59625858ee6102c34b49fee8a6cb4a75b6a9d842d11c5d"
+    "sha256": "d45fac67efe3ff3b7d52f4208f9d7772c9a3c29e5e0f8ab3d5e8b31c00d4186d"
   },
   {
     "path": "scripts/build-submission.py",
-    "bytes": 8673,
-    "sha256": "3d342aa6ba89d0ebc3fed41911753923c68152d57616fa3ce6add9b0731c0703"
+    "bytes": 8903,
+    "sha256": "7ec67edd36ca433b1a78f59a9a79ddf219e74f1debe4e84ba0fda58fd428acc6"
   },
   {
-    "path": "scripts/init-db.mjs",
-    "bytes": 674,
-    "sha256": "76254f4ac29eace9c7acd27379772903d993409c501f52ed954d4b74ff64eda9"
+    "path": "scripts/create-local-secret.mjs",
+    "bytes": 496,
+    "sha256": "42d692667484b4bca4df1e28e9dd7f0fd8d1a4db16d40304a921ef5de75e0440"
   },
   {
     "path": "scripts/requirements-submission.txt",
@@ -110,9 +105,14 @@
     "sha256": "b802c7c849c8ab94480294fd74811081f858702fb07c74797e7d36ea255c2e70"
   },
   {
+    "path": "scripts/seed-d1.ts",
+    "bytes": 3232,
+    "sha256": "58e81138784c696d6e9c511368e7d61f8eecd1457f5998a9173b3c038f2a9ec1"
+  },
+  {
     "path": "server/api/[...path].ts",
-    "bytes": 12001,
-    "sha256": "f70825ccf12606fbf03adf3896ad4ef10fd517448f7d87aec4f7de376d6053b6"
+    "bytes": 13653,
+    "sha256": "6c717eca01a760eed1dfd8c1dd5207b373b84d20108f251a7575654e6125ac6b"
   },
   {
     "path": "server/middleware/security.ts",
@@ -121,13 +121,18 @@
   },
   {
     "path": "server/utils/auth.ts",
-    "bytes": 1927,
-    "sha256": "23752e23b79c9d6f3560e0a7c0f3f9cff9e7559d33074e067b01c911b2848e65"
+    "bytes": 1989,
+    "sha256": "f4fdfc58eec1b7c3b8f912ea80ab47405b0c626ab96c229404a48f9ea2bc1bbc"
   },
   {
     "path": "server/utils/db.ts",
-    "bytes": 240,
-    "sha256": "f1abf41ce5087c3486aafd2264a7751ea19db562acb99b2711d263bae82feb7a"
+    "bytes": 1878,
+    "sha256": "f9cf05669d26878eed01370bed21c0824d54d731f582a826c0c86fb0aa2595d3"
+  },
+  {
+    "path": "server/utils/password.ts",
+    "bytes": 1492,
+    "sha256": "97c8686675beaf021c0b15dd46a56d62d0847a52a67e0b210e9a91f0b3bd2b14"
   },
   {
     "path": "server/utils/policy.ts",
@@ -141,8 +146,13 @@
   },
   {
     "path": "tests/e2e/campusfix.spec.ts",
-    "bytes": 11318,
-    "sha256": "6797e00116b17a0882388996de26dc2a85497530dc1763dc17e287dab382b961"
+    "bytes": 12901,
+    "sha256": "45eccdbbed02234bbf30616d45ff4f2eed59c569a7f5b3555e24cc68f66b42e8"
+  },
+  {
+    "path": "tests/password.test.ts",
+    "bytes": 796,
+    "sha256": "a7c0ad2bcec4ab480c22f1083d86213781e08adb52ecbacc24c9948daf6005c7"
   },
   {
     "path": "tests/policy.test.ts",
@@ -163,5 +173,10 @@
     "path": "vitest.config.ts",
     "bytes": 201,
     "sha256": "53976af8b3f77956aef671faf78d83ce51a70334ede768ef2f48535abced5241"
+  },
+  {
+    "path": "wrangler.jsonc",
+    "bytes": 343,
+    "sha256": "6a86569139dca042cf22eb4cd1861a99aed6da0c7d186e1a4b99e7b191c41079"
   }
 ]

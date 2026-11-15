@@ -89,3 +89,21 @@ test('API filters and pagination preserve ownership, category CRUD and inactive 
     expect((await admin.patch(`/api/users/${fresh.id}`, { data: { roleId: 'STUDENT', active: false } })).status()).toBe(200); expect((await c.get('/api/requests')).status()).toBe(401)
   } finally { await Promise.all([admin.dispose(),student.dispose(),c.dispose()]) }
 })
+test('concurrent officer updates create one progress log and failed creation rolls back', async () => {
+  const student=await client('student'),admin=await client('admin'),officer=await client('officer')
+  try {
+    const categories=await (await student.get('/api/categories')).json()
+    const payload={title:'Concurrent maintenance test',description:'Test that competing status writes preserve one complete history.',location:'Test laboratory',categoryId:categories[0].id,priority:'NORMAL'}
+    const initial=await (await student.get('/api/requests')).json()
+    expect((await student.post('/api/requests',{data:{...payload,categoryId:'missing-category'}})).status()).toBe(409)
+    expect((await (await student.get('/api/requests')).json()).total).toBe(initial.total)
+    const r=await (await student.post('/api/requests',{data:payload})).json()
+    const users=await (await admin.get('/api/users')).json()
+    expect((await admin.post(`/api/requests/${r.id}/assign`,{data:{officerId:users.find((u:any)=>u.roleId==='OFFICER').id}})).status()).toBe(200)
+    const results=await Promise.all([1,2].map(n=>officer.patch(`/api/requests/${r.id}/status`,{data:{status:'IN_PROGRESS',note:`Concurrent attempt number ${n}`}})))
+    expect(results.map(r=>r.status()).sort()).toEqual([200,409])
+    const updated=await (await student.get(`/api/requests/${r.id}`)).json()
+    expect(updated.logs.filter((l:any)=>l.status==='IN_PROGRESS')).toHaveLength(1)
+    await admin.delete(`/api/requests/${r.id}`)
+  } finally {await Promise.all([student.dispose(),admin.dispose(),officer.dispose()])}
+})

@@ -76,7 +76,7 @@
           "image": {
             "type": "string",
             "nullable": true,
-            "maxLength": 2800000
+            "maxLength": 1400000
           }
         },
         "required": [

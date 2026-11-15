@@ -1,29 +1,28 @@
 
-> campusfix@ db:deploy /Users/tt/Documents/Codex/2026-11-15/referenced-chatgpt-conversation-this-is-an/CampusFix
-> node --env-file-if-exists=.env scripts/init-db.mjs
+> campusfix@ db:local /Users/tt/Documents/Codex/2026-11-15/referenced-chatgpt-conversation-this-is-an/CampusFix
+> wrangler d1 migrations apply DB --local
 
-.env not found. Continuing without it.
-Prisma schema loaded from prisma/schema.prisma
-Datasource "db": SQLite database "campusfix.db" at "file:./campusfix.db"
 
-1 migration found in prisma/migrations
+ ⛅️ wrangler 4.162.0
+────────────────────
+Resource location: local 
 
-Applying migration `202611150001_initial`
+Use --remote if you want to access the remote instance.
 
-The following migration(s) have been applied:
-
-migrations/
-  └─ 202611150001_initial/
-    └─ migration.sql
-      
-All migrations have been successfully applied.
-┌─────────────────────────────────────────────────────────┐
-│  Update available 6.8.2 -> 8.0.0-rc.33                  │
-│                                                         │
-│  This is a major update - please follow the guide at    │
-│  https://pris.ly/d/major-version-upgrade                │
-│                                                         │
-│  Run the following to update                            │
-│    npm i --save-dev prisma@latest                       │
-│    npm i @prisma/client@latest                          │
-└─────────────────────────────────────────────────────────┘
+Migrations to be applied:
+┌──────────────────┐
+│ name             │
+├──────────────────┤
+│ 0001_initial.sql │
+└──────────────────┘
+? About to apply 1 migration(s)
+Your database may not be available to serve requests during the migration, continue?
+🤖 Using fallback value in non-interactive context: yes
+🌀 Executing on local database DB (f1fef92f-fe46-46b7-839d-a5cc6963fdc7) from .wrangler/state/v3/d1:
+🌀 To execute on your remote database, add a --remote flag to your wrangler command.
+🚣 14 commands executed successfully.
+┌──────────────────┬────────┐
+│ name             │ status │
+├──────────────────┼────────┤
+│ 0001_initial.sql │ ✅     │
+└──────────────────┴────────┘
