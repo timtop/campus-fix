@@ -1,0 +1,29 @@
+
+> campusfix@ db:deploy /Users/tt/Documents/Codex/2026-11-15/referenced-chatgpt-conversation-this-is-an/CampusFix
+> node --env-file-if-exists=.env scripts/init-db.mjs
+
+.env not found. Continuing without it.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": SQLite database "campusfix.db" at "file:./campusfix.db"
+
+1 migration found in prisma/migrations
+
+Applying migration `202611150001_initial`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 202611150001_initial/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.8.2 -> 8.0.0-rc.33                  │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
