@@ -1,6 +1,6 @@
 # CampusFix
 
-University maintenance and service request management for MIT 8333, 2026/2027. Built in a new folder using Nuxt 4, Vue 3, TypeScript, Tailwind, Nitro, Prisma and SQLite. SQLite is the assessment's permitted relational database alternative to PostgreSQL.
+University maintenance and service request management for MIT 8333, 2026/2027. Built using Nuxt 4, Vue 3, TypeScript, Tailwind, Nitro, Prisma and SQLite. SQLite is the assessment's permitted relational database alternative to PostgreSQL.
 
 ## Run locally
 
